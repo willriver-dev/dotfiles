@@ -182,11 +182,23 @@ print_success "Đã cập nhật flake.nix"
 # Update example-configuration.nix - change hostname and username
 print_info "Đang cập nhật example-configuration.nix..."
 sed -i "s/networking\.hostName = \".*\";/networking.hostName = \"$HOSTNAME\";/" example-configuration.nix
-sed -i "s/users\.users\.[^ ]* = {/users.users.$USERNAME = {/" example-configuration.nix
+# Use more specific pattern to match username in users.users.<username>
+sed -i "s/users\.users\.[a-z_][a-z0-9_-]* = {/users.users.$USERNAME = {/" example-configuration.nix
 print_success "Đã cập nhật example-configuration.nix"
 
 # Create a personalized configuration.nix
 print_info "Đang tạo configuration.nix..."
+
+# Detect NixOS version from os-release if available
+STATE_VERSION="24.05"
+if [ -f /etc/os-release ]; then
+    # Try to extract version from VERSION_ID (e.g., "24.05")
+    DETECTED_VERSION=$(grep "^VERSION_ID=" /etc/os-release | cut -d'"' -f2 || echo "")
+    if [ -n "$DETECTED_VERSION" ]; then
+        STATE_VERSION="$DETECTED_VERSION"
+        print_info "Phát hiện NixOS phiên bản / Detected NixOS version: $STATE_VERSION"
+    fi
+fi
 
 cat > configuration.nix << EOF
 # NixOS Configuration
@@ -233,7 +245,7 @@ cat >> configuration.nix << EOF
   # System state version
   # Note: This should match your NixOS version. Change if you're using a different version.
   # See https://nixos.org/manual/nixos/stable/options.html#opt-system.stateVersion
-  system.stateVersion = "24.05";
+  system.stateVersion = "$STATE_VERSION";
 }
 EOF
 
