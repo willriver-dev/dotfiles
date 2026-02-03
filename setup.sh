@@ -146,6 +146,8 @@ done
 echo ""
 print_info "Do you want to set a password now?"
 print_warning "Note: A simple default password 'initial' will be used if you skip this step"
+print_warning "Password will be stored as plain text in configuration.nix (for initial setup only)"
+print_warning "You MUST change it after first login using 'passwd' command"
 read -p "$(echo -e "${BLUE}?${NC} (y/n) [y]: ")" SET_PASSWORD
 SET_PASSWORD="${SET_PASSWORD:-y}"
 
@@ -229,6 +231,7 @@ EOF
 if [ "$HAS_PASSWORD" = true ]; then
     # Use plain password directly - NixOS will handle it at build time
     # This avoids dependencies on mkpasswd, python3, or openssl
+    # Note: initialPassword is stored in plain text but only used for first login
     cat >> configuration.nix << EOF
     initialPassword = "$PASSWORD";
 EOF
