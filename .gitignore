@@ -3,7 +3,9 @@ result
 result-*
 .direnv
 
-# Setup script backups
+# Setup script outputs
+configuration.nix
+hardware-configuration.nix
 *.backup.*
 
 # Terraform
