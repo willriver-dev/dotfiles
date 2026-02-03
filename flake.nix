@@ -47,14 +47,14 @@
         # Editors
         helix
         vim
-        vscode
+        vscodium
 
         # Browsers
         firefox
         chromium
 
         # API testing tools
-        postman
+        #postman
         insomnia
 
         # Other tools
