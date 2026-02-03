@@ -194,9 +194,9 @@ print_success "Updated example-configuration.nix"
 print_info "Creating configuration.nix..."
 
 # Detect NixOS version from os-release if available
-STATE_VERSION="24.05"
+STATE_VERSION="25.11"
 if [ -f /etc/os-release ]; then
-    # Try to extract version from VERSION_ID (e.g., "24.05")
+    # Try to extract version from VERSION_ID (e.g., "25.11")
     DETECTED_VERSION=$(grep "^VERSION_ID=" /etc/os-release | cut -d'"' -f2 || echo "")
     if [ -n "$DETECTED_VERSION" ]; then
         STATE_VERSION="$DETECTED_VERSION"

@@ -19,6 +19,7 @@ Cấu hình NixOS đơn giản sử dụng Flakes với Niri Wayland compositor.
 
 ## Mục lục
 
+- [Hiểu về các tệp tin](#hiểu-về-các-tệp-tin)
 - [Yêu cầu](#yêu-cầu)
 - [Cài đặt](#cài-đặt)
 - [Cấu hình mặc định](#cấu-hình-mặc-định)
@@ -28,6 +29,18 @@ Cấu hình NixOS đơn giản sử dụng Flakes với Niri Wayland compositor.
 - [Khắc phục sự cố](#khắc-phục-sự-cố)
 - [Cấu trúc](#cấu-trúc)
 - [Tùy chỉnh](#tùy-chỉnh)
+
+## Hiểu về các tệp tin
+
+Repository này chứa nhiều tệp cấu hình. Đây là mục đích của từng tệp:
+
+- **`flake.nix`**: Tệp flake chính định nghĩa các gói và cấu hình hệ thống. Tệp này import `configuration.nix`.
+- **`configuration.nix`**: Cấu hình hệ thống cá nhân của bạn (hostname, boot loader, users). Được tạo bởi `setup.sh`.
+- **`hardware-configuration.nix`**: Cấu hình phần cứng cho máy của bạn. Được tạo bởi NixOS hoặc `setup.sh`.
+- **`example-configuration.nix`**: Ví dụ tham khảo về cách cấu trúc NixOS config. **Đây chỉ là tài liệu, không được sử dụng bởi flake.**
+- **`setup.sh`**: Script tự động tạo `configuration.nix` và `hardware-configuration.nix` cho bạn.
+
+**Để chạy cấu hình này**: Bạn cần `configuration.nix` và `hardware-configuration.nix`. Cách dễ nhất là chạy `./setup.sh` để tự động tạo cả hai tệp.
 
 ## Yêu cầu
 
@@ -383,6 +396,30 @@ docker ps -a
 
 ## Khắc phục sự cố
 
+### Vấn đề: Lỗi boot loader - "requires boot.loader.grub.device"
+
+**Thông báo lỗi**: 
+```
+Failed assertions:
+- The filesystem option does not specify your root file system. The boot loader, grub, requires boot.loader.grub.device or 'boot.loader.grub.mirroredBoots' to make the system bootable.
+```
+
+**Giải pháp**: Bạn cần tạo cấu hình phần cứng trước:
+
+```bash
+# 1. Tạo cấu hình phần cứng
+sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix
+
+# 2. Đảm bảo configuration.nix tồn tại và được cấu hình đúng
+# Nếu chưa có, chạy script setup:
+./setup.sh
+
+# 3. Bây giờ rebuild
+sudo nixos-rebuild switch --flake .#default
+```
+
+**Lưu ý**: Flake yêu cầu cả `configuration.nix` và `hardware-configuration.nix` phải tồn tại. Chạy `./setup.sh` để tự động tạo các tệp này với cấu hình hệ thống của bạn.
+
 ### Vấn đề: "command not found" cho các gói đã cài
 
 **Giải pháp**: Đăng xuất và đăng nhập lại, hoặc source profile:
@@ -503,15 +540,20 @@ Nếu bạn vẫn gặp vấn đề:
 
 ```
 dotfiles/
-├── flake.nix                    # Cấu hình chính với các gói và Niri
-├── example-configuration.nix    # Ví dụ cấu hình hệ thống NixOS
-├── setup.sh                     # Script thiết lập tự động (MỚI!)
+├── flake.nix                    # Cấu hình flake chính (import configuration.nix)
+├── configuration.nix            # Cấu hình hệ thống của bạn (hostname, boot, users) - tạo bởi setup.sh
+├── hardware-configuration.nix   # Cấu hình phần cứng - tạo bởi setup.sh hoặc nixos-generate-config
+├── example-configuration.nix    # Ví dụ tham khảo (chỉ là tài liệu, không dùng trong flake)
+├── setup.sh                     # Script thiết lập tự động - chạy cái này trước!
 ├── README.md                    # Tài liệu tiếng Anh
 └── docs/
     └── README.vi-VN.md         # Tài liệu tiếng Việt (file này)
 ```
 
-Script `setup.sh` tự động hóa quá trình cấu hình thủ công tẻ nhạt. Thay vì phải chỉnh sửa file để đặt username, hostname và password, chỉ cần chạy script và trả lời vài câu hỏi!
+**Quan trọng**: 
+- `configuration.nix` và `hardware-configuration.nix` cần thiết để chạy flake
+- Chạy `./setup.sh` để tự động tạo cả hai tệp
+- `example-configuration.nix` chỉ là tệp tham khảo/tài liệu
 
 ## Tùy chỉnh
 
@@ -546,7 +588,7 @@ Sửa phần cấu hình hệ thống trong `flake.nix` hoặc sử dụng `exam
 Trong `flake.nix`, thay đổi nixpkgs input (dòng 5):
 
 ```nix
-nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";  # hoặc phiên bản khác
+nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";  # hoặc phiên bản khác
 ```
 
 Sau đó update:
