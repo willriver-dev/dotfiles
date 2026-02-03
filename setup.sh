@@ -159,6 +159,7 @@ if [[ "$SET_PASSWORD" =~ ^[Yy]$ ]]; then
     PASSWORD=$(prompt_password "Nhập mật khẩu / Enter password")
     print_success "Mật khẩu đã được thiết lập / Password has been set"
     HAS_PASSWORD=true
+    IS_DEFAULT_PASSWORD=false
 else
     print_warning "Bỏ qua đặt mật khẩu / Skipping password setup"
     print_info "Mật khẩu mặc định ban đầu sẽ được đặt là: 'nixos'"
@@ -169,6 +170,7 @@ else
     print_info "Use this command to change password: passwd"
     PASSWORD="nixos"
     HAS_PASSWORD=true
+    IS_DEFAULT_PASSWORD=true
 fi
 
 echo ""
@@ -240,9 +242,9 @@ if [ "$HAS_PASSWORD" = true ]; then
     # Try mkpasswd first (from whois package)
     if command -v mkpasswd &> /dev/null; then
         HASHED_PASSWORD=$(mkpasswd -m sha-512 "$PASSWORD")
-    # Fallback to Python's crypt module
+    # Fallback to Python's crypt module (secure: password via stdin)
     elif command -v python3 &> /dev/null; then
-        HASHED_PASSWORD=$(python3 -c "import crypt; print(crypt.crypt('$PASSWORD', crypt.mksalt(crypt.METHOD_SHA512)))" 2>/dev/null)
+        HASHED_PASSWORD=$(python3 -c 'import sys, crypt; print(crypt.crypt(sys.stdin.read().rstrip(), crypt.mksalt(crypt.METHOD_SHA512)))' <<< "$PASSWORD" 2>/dev/null)
     # Last resort: use openssl if available
     elif command -v openssl &> /dev/null; then
         HASHED_PASSWORD=$(openssl passwd -6 "$PASSWORD")
@@ -276,6 +278,29 @@ EOF
 
 print_success "Đã tạo configuration.nix"
 
+# Function to generate or copy hardware configuration
+generate_hardware_config() {
+    # Try to generate hardware config
+    if sudo nixos-generate-config --show-hardware-config 2>/dev/null | sudo tee hardware-configuration.nix > /dev/null; then
+        print_success "Đã tạo hardware-configuration.nix tự động / Auto-generated hardware-configuration.nix"
+        return 0
+    else
+        print_warning "Không thể tự động tạo, sao chép từ /etc/nixos/"
+        print_warning "Cannot auto-generate, copying from /etc/nixos/"
+        if sudo cp /etc/nixos/hardware-configuration.nix . 2>/dev/null; then
+            print_success "Đã sao chép hardware-configuration.nix"
+            return 0
+        else
+            print_warning "Không thể tìm thấy /etc/nixos/hardware-configuration.nix"
+            print_warning "Cannot find /etc/nixos/hardware-configuration.nix"
+            print_info "Bạn sẽ cần tạo file này bằng lệnh:"
+            print_info "You will need to create this file with:"
+            echo "   ${GREEN}sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix${NC}"
+            return 1
+        fi
+    fi
+}
+
 # Generate hardware configuration automatically
 echo ""
 print_info "Đang tạo hardware-configuration.nix..."
@@ -289,37 +314,10 @@ if [ -f "hardware-configuration.nix" ]; then
     if [[ ! "$OVERWRITE_HW" =~ ^[Yy]$ ]]; then
         print_info "Giữ nguyên hardware-configuration.nix hiện tại / Keeping existing hardware-configuration.nix"
     else
-        # Try to generate hardware config
-        if sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix 2>/dev/null; then
-            print_success "Đã tạo hardware-configuration.nix tự động / Auto-generated hardware-configuration.nix"
-        else
-            print_warning "Không thể tự động tạo, sao chép từ /etc/nixos/"
-            print_warning "Cannot auto-generate, copying from /etc/nixos/"
-            if sudo cp /etc/nixos/hardware-configuration.nix . 2>/dev/null; then
-                print_success "Đã sao chép hardware-configuration.nix"
-            else
-                print_error "Không thể sao chép hardware-configuration.nix"
-                print_info "Bạn sẽ cần tạo file này thủ công"
-            fi
-        fi
+        generate_hardware_config
     fi
 else
-    # Try to generate hardware config
-    if sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix 2>/dev/null; then
-        print_success "Đã tạo hardware-configuration.nix tự động / Auto-generated hardware-configuration.nix"
-    else
-        print_warning "Không thể tự động tạo, sao chép từ /etc/nixos/"
-        print_warning "Cannot auto-generate, copying from /etc/nixos/"
-        if sudo cp /etc/nixos/hardware-configuration.nix . 2>/dev/null; then
-            print_success "Đã sao chép hardware-configuration.nix"
-        else
-            print_warning "Không thể tìm thấy /etc/nixos/hardware-configuration.nix"
-            print_warning "Cannot find /etc/nixos/hardware-configuration.nix"
-            print_info "Bạn sẽ cần tạo file này bằng lệnh:"
-            print_info "You will need to create this file with:"
-            echo "   ${GREEN}sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix${NC}"
-        fi
-    fi
+    generate_hardware_config
 fi
 
 echo ""
@@ -347,7 +345,7 @@ echo "3. Khởi động lại / Reboot:"
 echo "   ${GREEN}sudo reboot${NC}"
 echo ""
 
-if [ "$PASSWORD" = "nixos" ] 2>/dev/null || [ "$HAS_PASSWORD" = false ]; then
+if [ "$IS_DEFAULT_PASSWORD" = true ]; then
     print_warning "⚠️  QUAN TRỌNG / IMPORTANT ⚠️"
     print_warning "Mật khẩu mặc định là 'nixos'"
     print_warning "Default password is 'nixos'"
