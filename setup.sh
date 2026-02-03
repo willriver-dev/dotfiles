@@ -159,11 +159,18 @@ if [[ "$SET_PASSWORD" =~ ^[Yy]$ ]]; then
     PASSWORD=$(prompt_password "Nhập mật khẩu / Enter password")
     print_success "Mật khẩu đã được thiết lập / Password has been set"
     HAS_PASSWORD=true
+    IS_DEFAULT_PASSWORD=false
 else
     print_warning "Bỏ qua đặt mật khẩu / Skipping password setup"
-    print_info "Bạn sẽ cần đặt mật khẩu sau bằng: sudo passwd $USERNAME"
-    print_info "You will need to set password later with: sudo passwd $USERNAME"
-    HAS_PASSWORD=false
+    print_info "Mật khẩu mặc định ban đầu sẽ được đặt là: 'nixos'"
+    print_info "Initial default password will be set to: 'nixos'"
+    print_warning "Nhớ thay đổi mật khẩu ngay sau khi đăng nhập đầu tiên!"
+    print_warning "Remember to change password immediately after first login!"
+    print_info "Dùng lệnh sau để đổi mật khẩu: passwd"
+    print_info "Use this command to change password: passwd"
+    PASSWORD="nixos"
+    HAS_PASSWORD=true
+    IS_DEFAULT_PASSWORD=true
 fi
 
 echo ""
@@ -229,14 +236,34 @@ cat > configuration.nix << EOF
 EOF
 
 if [ "$HAS_PASSWORD" = true ]; then
-    # Generate hashed password using openssl
-    HASHED_PASSWORD=$(openssl passwd -6 "$PASSWORD")
+    # Generate hashed password using mkpasswd or Python
+    HASHED_PASSWORD=""
+    
+    # Try mkpasswd first (from whois package)
+    if command -v mkpasswd &> /dev/null; then
+        HASHED_PASSWORD=$(mkpasswd -m sha-512 "$PASSWORD")
+    # Fallback to Python's crypt module (secure: password via stdin)
+    elif command -v python3 &> /dev/null; then
+        HASHED_PASSWORD=$(python3 -c 'import sys, crypt; print(crypt.crypt(sys.stdin.read().rstrip(), crypt.mksalt(crypt.METHOD_SHA512)))' <<< "$PASSWORD" 2>/dev/null)
+    # Last resort: use openssl if available
+    elif command -v openssl &> /dev/null; then
+        HASHED_PASSWORD=$(openssl passwd -6 "$PASSWORD")
+    fi
+    
     # Clear password from memory immediately
     unset PASSWORD
-    cat >> configuration.nix << EOF
+    
+    if [ -n "$HASHED_PASSWORD" ]; then
+        cat >> configuration.nix << EOF
     hashedPassword = "$HASHED_PASSWORD";
 EOF
-    unset HASHED_PASSWORD
+        unset HASHED_PASSWORD
+    else
+        print_error "Không thể tạo mật khẩu băm / Unable to generate hashed password"
+        print_error "Vui lòng cài đặt mkpasswd, python3, hoặc openssl"
+        print_error "Please install mkpasswd, python3, or openssl"
+        exit 1
+    fi
 fi
 
 cat >> configuration.nix << EOF
@@ -251,6 +278,48 @@ EOF
 
 print_success "Đã tạo configuration.nix"
 
+# Function to generate or copy hardware configuration
+generate_hardware_config() {
+    # Try to generate hardware config
+    if sudo nixos-generate-config --show-hardware-config 2>/dev/null | sudo tee hardware-configuration.nix > /dev/null; then
+        print_success "Đã tạo hardware-configuration.nix tự động / Auto-generated hardware-configuration.nix"
+        return 0
+    else
+        print_warning "Không thể tự động tạo, sao chép từ /etc/nixos/"
+        print_warning "Cannot auto-generate, copying from /etc/nixos/"
+        if sudo cp /etc/nixos/hardware-configuration.nix . 2>/dev/null; then
+            print_success "Đã sao chép hardware-configuration.nix"
+            return 0
+        else
+            print_warning "Không thể tìm thấy /etc/nixos/hardware-configuration.nix"
+            print_warning "Cannot find /etc/nixos/hardware-configuration.nix"
+            print_info "Bạn sẽ cần tạo file này bằng lệnh:"
+            print_info "You will need to create this file with:"
+            echo "   ${GREEN}sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix${NC}"
+            return 1
+        fi
+    fi
+}
+
+# Generate hardware configuration automatically
+echo ""
+print_info "Đang tạo hardware-configuration.nix..."
+
+# Check if hardware-configuration.nix already exists
+if [ -f "hardware-configuration.nix" ]; then
+    print_warning "hardware-configuration.nix đã tồn tại / already exists"
+    read -p "$(echo -e "${BLUE}?${NC} Ghi đè / Overwrite? (y/n) [n]: ")" OVERWRITE_HW
+    OVERWRITE_HW="${OVERWRITE_HW:-n}"
+    
+    if [[ ! "$OVERWRITE_HW" =~ ^[Yy]$ ]]; then
+        print_info "Giữ nguyên hardware-configuration.nix hiện tại / Keeping existing hardware-configuration.nix"
+    else
+        generate_hardware_config
+    fi
+else
+    generate_hardware_config
+fi
+
 echo ""
 echo "================================================="
 print_success "Thiết lập hoàn tất / Setup completed!"
@@ -261,6 +330,7 @@ print_info "Các file đã được cập nhật / Files have been updated:"
 echo "  ✓ flake.nix"
 echo "  ✓ example-configuration.nix"
 echo "  ✓ configuration.nix (mới / new)"
+echo "  ✓ hardware-configuration.nix"
 echo ""
 
 print_info "Các bước tiếp theo / Next steps:"
@@ -268,21 +338,20 @@ echo ""
 echo "1. Xem lại cấu hình / Review configuration:"
 echo "   ${GREEN}cat configuration.nix${NC}"
 echo ""
-echo "2. Sao chép hardware-configuration.nix nếu chưa có:"
-echo "   Copy hardware-configuration.nix if not exists:"
-echo "   ${GREEN}sudo cp /etc/nixos/hardware-configuration.nix .${NC}"
-echo ""
-echo "3. Build và apply cấu hình / Build and apply configuration:"
+echo "2. Build và apply cấu hình / Build and apply configuration:"
 echo "   ${GREEN}sudo nixos-rebuild switch --flake .#default${NC}"
 echo ""
-echo "4. Khởi động lại / Reboot:"
+echo "3. Khởi động lại / Reboot:"
 echo "   ${GREEN}sudo reboot${NC}"
 echo ""
 
-if [ "$HAS_PASSWORD" = false ]; then
-    print_warning "Nhớ đặt mật khẩu sau khi cài đặt:"
-    print_warning "Remember to set password after installation:"
-    echo "   ${YELLOW}sudo passwd $USERNAME${NC}"
+if [ "$IS_DEFAULT_PASSWORD" = true ]; then
+    print_warning "⚠️  QUAN TRỌNG / IMPORTANT ⚠️"
+    print_warning "Mật khẩu mặc định là 'nixos'"
+    print_warning "Default password is 'nixos'"
+    print_warning "Hãy đổi mật khẩu ngay sau khi đăng nhập đầu tiên!"
+    print_warning "Change password immediately after first login!"
+    echo "   ${YELLOW}passwd${NC}"
     echo ""
 fi
 

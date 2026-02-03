@@ -65,21 +65,18 @@ Use the automated setup script to configure username, hostname, and password:
 git clone https://github.com/willriver-dev/dotfiles.git
 cd dotfiles
 
-# 2. Run the setup script
+# 2. Run the setup script (it will auto-generate hardware config)
 ./setup.sh
 
 # 3. Follow the prompts to configure:
 #    - Username (default: current user)
 #    - Hostname (default: nixos)
-#    - Password (optional, but recommended)
+#    - Password (set custom or use default 'nixos')
 
-# 4. Copy hardware configuration if not exists
-sudo cp /etc/nixos/hardware-configuration.nix .
-
-# 5. Build and switch to the new configuration
+# 4. Build and switch to the new configuration
 sudo nixos-rebuild switch --flake .#default
 
-# 6. Reboot to apply all changes
+# 5. Reboot to apply all changes
 sudo reboot
 ```
 
@@ -87,7 +84,8 @@ The setup script will automatically:
 - Update `flake.nix` with your username
 - Update `example-configuration.nix` with your hostname and username
 - Create a personalized `configuration.nix` with your settings
-- Optionally set a secure hashed password
+- Set a secure hashed password (custom or default 'nixos')
+- Auto-generate `hardware-configuration.nix` for your system
 
 ### Method 1: System-Level Installation (Manual)
 
