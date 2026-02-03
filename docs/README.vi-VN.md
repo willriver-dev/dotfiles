@@ -65,21 +65,18 @@ Sử dụng script tự động để cấu hình username, hostname và passwor
 git clone https://github.com/willriver-dev/dotfiles.git
 cd dotfiles
 
-# 2. Chạy script thiết lập
+# 2. Chạy script thiết lập (sẽ tự động tạo hardware config)
 ./setup.sh
 
 # 3. Làm theo hướng dẫn để cấu hình:
 #    - Tên người dùng (mặc định: người dùng hiện tại)
 #    - Hostname (mặc định: nixos)
-#    - Mật khẩu (tùy chọn, nhưng khuyến nghị)
+#    - Mật khẩu (tùy chỉnh hoặc dùng mặc định 'nixos')
 
-# 4. Sao chép hardware configuration nếu chưa có
-sudo cp /etc/nixos/hardware-configuration.nix .
-
-# 5. Build và chuyển sang cấu hình mới
+# 4. Build và chuyển sang cấu hình mới
 sudo nixos-rebuild switch --flake .#default
 
-# 6. Khởi động lại để áp dụng tất cả thay đổi
+# 5. Khởi động lại để áp dụng tất cả thay đổi
 sudo reboot
 ```
 
@@ -87,7 +84,8 @@ Script thiết lập sẽ tự động:
 - Cập nhật `flake.nix` với tên người dùng của bạn
 - Cập nhật `example-configuration.nix` với hostname và username
 - Tạo file `configuration.nix` cá nhân hóa với cài đặt của bạn
-- Tùy chọn đặt mật khẩu đã được mã hóa an toàn
+- Đặt mật khẩu đã được mã hóa an toàn (tùy chỉnh hoặc mặc định 'nixos')
+- Tự động tạo `hardware-configuration.nix` cho hệ thống của bạn
 
 ### Phương pháp 1: Cài đặt System-Level (Thủ công)
 
