@@ -2,12 +2,23 @@
   description = "Simple NixOS dotfiles with Niri";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     niri.url = "github:sodiboo/niri-flake";
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+  };
+
+    nixConfig = {
+    extra-substituters = [
+      "https://mirror.sjtu.edu.cn/nix-channels/store"
+      "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
+      "https://mirrors.ustc.edu.cn/nix-channels/store"
+    ];
+    extra-trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    ];
   };
 
   outputs = { self, nixpkgs, niri, home-manager }:
@@ -76,7 +87,7 @@
             virtualisation.docker.enable = true;
 
             # Basic system configuration
-            system.stateVersion = "24.05";
+            system.stateVersion = "25.11";
           })
         ];
       };
@@ -90,7 +101,7 @@
           ({ pkgs, ... }: {
             home.username = username;
             home.homeDirectory = "/home/${username}";
-            home.stateVersion = "24.05";
+            home.stateVersion = "25.11";
 
             # User packages
             home.packages = commonPackages;
