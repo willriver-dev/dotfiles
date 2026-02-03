@@ -56,7 +56,40 @@ sudo nixos-rebuild switch
 
 ## Cài đặt
 
-### Phương pháp 1: Cài đặt System-Level (Khuyến nghị)
+### Thiết lập nhanh (Khuyến nghị)
+
+Sử dụng script tự động để cấu hình username, hostname và password:
+
+```bash
+# 1. Clone repository này
+git clone https://github.com/willriver-dev/dotfiles.git
+cd dotfiles
+
+# 2. Chạy script thiết lập
+./setup.sh
+
+# 3. Làm theo hướng dẫn để cấu hình:
+#    - Tên người dùng (mặc định: người dùng hiện tại)
+#    - Hostname (mặc định: nixos)
+#    - Mật khẩu (tùy chọn, nhưng khuyến nghị)
+
+# 4. Sao chép hardware configuration nếu chưa có
+sudo cp /etc/nixos/hardware-configuration.nix .
+
+# 5. Build và chuyển sang cấu hình mới
+sudo nixos-rebuild switch --flake .#default
+
+# 6. Khởi động lại để áp dụng tất cả thay đổi
+sudo reboot
+```
+
+Script thiết lập sẽ tự động:
+- Cập nhật `flake.nix` với tên người dùng của bạn
+- Cập nhật `example-configuration.nix` với hostname và username
+- Tạo file `configuration.nix` cá nhân hóa với cài đặt của bạn
+- Tùy chọn đặt mật khẩu đã được mã hóa an toàn
+
+### Phương pháp 1: Cài đặt System-Level (Thủ công)
 
 Phương pháp này cài đặt cấu hình toàn hệ thống:
 

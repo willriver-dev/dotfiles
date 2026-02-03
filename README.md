@@ -56,7 +56,40 @@ sudo nixos-rebuild switch
 
 ## Installation
 
-### Method 1: System-Level Installation (Recommended)
+### Quick Setup (Recommended)
+
+Use the automated setup script to configure username, hostname, and password:
+
+```bash
+# 1. Clone this repository
+git clone https://github.com/willriver-dev/dotfiles.git
+cd dotfiles
+
+# 2. Run the setup script
+./setup.sh
+
+# 3. Follow the prompts to configure:
+#    - Username (default: current user)
+#    - Hostname (default: nixos)
+#    - Password (optional, but recommended)
+
+# 4. Copy hardware configuration if not exists
+sudo cp /etc/nixos/hardware-configuration.nix .
+
+# 5. Build and switch to the new configuration
+sudo nixos-rebuild switch --flake .#default
+
+# 6. Reboot to apply all changes
+sudo reboot
+```
+
+The setup script will automatically:
+- Update `flake.nix` with your username
+- Update `example-configuration.nix` with your hostname and username
+- Create a personalized `configuration.nix` with your settings
+- Optionally set a secure hashed password
+
+### Method 1: System-Level Installation (Manual)
 
 This method installs the configuration system-wide:
 
