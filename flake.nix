@@ -14,6 +14,48 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      
+      # Common package list
+      commonPackages = with pkgs; [
+        # Language runtimes
+        nodejs
+        python3
+        go
+        rustc
+        cargo
+
+        # Build tools
+        gcc
+        cmake
+        gnumake
+
+        # Version control
+        git
+        gh
+
+        # Editors
+        helix
+        vim
+        vscode
+
+        # Browsers
+        firefox
+        chromium
+
+        # API testing tools
+        postman
+        insomnia
+
+        # Other tools
+        fastfetch
+        htop
+        wget
+        curl
+
+        # Terminals
+        ghostty
+        alacritty
+      ];
     in
     {
       nixosConfigurations.default = nixpkgs.lib.nixosSystem {
@@ -25,49 +67,10 @@
             programs.niri.enable = true;
 
             # System packages
-            environment.systemPackages = with pkgs; [
-              # Language runtimes
-              nodejs
-              python3
-              go
-              rustc
-              cargo
-
-              # Build tools
-              gcc
-              cmake
-              gnumake
-
-              # Version control
-              git
-              gh
-
-              # Container tools
+            environment.systemPackages = commonPackages ++ (with pkgs; [
+              # Container tools (system-level)
               docker
-
-              # Editors
-              helix
-              vim
-              vscode
-
-              # Browsers
-              firefox
-              chromium
-
-              # API testing tools
-              postman
-              insomnia
-
-              # Other tools
-              fastfetch
-              htop
-              wget
-              curl
-
-              # Terminals
-              ghostty
-              alacritty
-            ];
+            ]);
 
             # Enable Docker
             virtualisation.docker.enable = true;
@@ -90,46 +93,7 @@
             home.stateVersion = "24.05";
 
             # User packages
-            home.packages = with pkgs; [
-              # Language runtimes
-              nodejs
-              python3
-              go
-              rustc
-              cargo
-
-              # Build tools
-              gcc
-              cmake
-              gnumake
-
-              # Version control
-              git
-              gh
-
-              # Editors
-              helix
-              vim
-              vscode
-
-              # Browsers
-              firefox
-              chromium
-
-              # API testing tools
-              postman
-              insomnia
-
-              # Other tools
-              fastfetch
-              htop
-              wget
-              curl
-
-              # Terminals
-              ghostty
-              alacritty
-            ];
+            home.packages = commonPackages;
 
             programs.home-manager.enable = true;
           })
