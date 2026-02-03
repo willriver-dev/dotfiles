@@ -246,7 +246,7 @@ cat >> configuration.nix << EOF
 }
 EOF
 
-print_success "Đã tạo configuration.nix"
+print_success "Created configuration.nix"
 
 # Function to generate or copy hardware configuration
 generate_hardware_config() {
