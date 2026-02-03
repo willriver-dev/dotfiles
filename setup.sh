@@ -70,11 +70,42 @@ prompt_password() {
     done
 }
 
+# Function to validate username
+validate_username() {
+    local username="$1"
+    if [[ ! "$username" =~ ^[a-z_][a-z0-9_-]*$ ]]; then
+        print_error "Tên người dùng không hợp lệ / Invalid username"
+        print_info "Username phải bắt đầu bằng chữ thường hoặc gạch dưới và chỉ chứa chữ thường, số, gạch dưới và gạch ngang"
+        print_info "Username must start with lowercase letter or underscore and contain only lowercase letters, numbers, underscores, and hyphens"
+        return 1
+    fi
+    return 0
+}
+
+# Function to validate hostname
+validate_hostname() {
+    local hostname="$1"
+    # Check RFC 1123 compliance
+    if [[ ! "$hostname" =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$ ]]; then
+        print_error "Hostname không hợp lệ / Invalid hostname"
+        print_info "Hostname phải tuân theo RFC 1123: chỉ chữ thường, số và dấu gạch ngang (không ở đầu/cuối)"
+        print_info "Hostname must follow RFC 1123: lowercase letters, numbers, and hyphens (not at start/end)"
+        return 1
+    fi
+    if [ ${#hostname} -gt 253 ]; then
+        print_error "Hostname quá dài (tối đa 253 ký tự) / Hostname too long (max 253 characters)"
+        return 1
+    fi
+    return 0
+}
+
 # Function to backup a file
 backup_file() {
     local file="$1"
     if [ -f "$file" ]; then
-        cp "$file" "${file}.backup.$(date +%Y%m%d_%H%M%S)"
+        # Add nanoseconds to ensure unique backup names
+        local backup_name="${file}.backup.$(date +%Y%m%d_%H%M%S_%N)"
+        cp "$file" "$backup_name"
         print_success "Đã sao lưu / Backed up: $file"
     fi
 }
@@ -98,12 +129,22 @@ print_info "This script will help you configure username, hostname, and password
 echo ""
 
 # Prompt for username
-USERNAME=$(prompt_input "Nhập tên người dùng / Enter username" "$USER")
-print_success "Username: $USERNAME"
+while true; do
+    USERNAME=$(prompt_input "Nhập tên người dùng / Enter username" "$USER")
+    if validate_username "$USERNAME"; then
+        print_success "Username: $USERNAME"
+        break
+    fi
+done
 
 # Prompt for hostname
-HOSTNAME=$(prompt_input "Nhập hostname" "nixos")
-print_success "Hostname: $HOSTNAME"
+while true; do
+    HOSTNAME=$(prompt_input "Nhập hostname" "nixos")
+    if validate_hostname "$HOSTNAME"; then
+        print_success "Hostname: $HOSTNAME"
+        break
+    fi
+done
 
 # Ask if user wants to set password now
 echo ""
@@ -178,15 +219,20 @@ EOF
 if [ "$HAS_PASSWORD" = true ]; then
     # Generate hashed password using openssl
     HASHED_PASSWORD=$(openssl passwd -6 "$PASSWORD")
+    # Clear password from memory immediately
+    unset PASSWORD
     cat >> configuration.nix << EOF
     hashedPassword = "$HASHED_PASSWORD";
 EOF
+    unset HASHED_PASSWORD
 fi
 
 cat >> configuration.nix << EOF
   };
 
   # System state version
+  # Note: This should match your NixOS version. Change if you're using a different version.
+  # See https://nixos.org/manual/nixos/stable/options.html#opt-system.stateVersion
   system.stateVersion = "24.05";
 }
 EOF
