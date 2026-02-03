@@ -380,6 +380,73 @@ nix-env -q
 htop
 ```
 
+### Sử dụng Font Lilex Nerd Font
+
+Sau khi cài đặt, Lilex Nerd Font sẽ có sẵn trên toàn hệ thống:
+
+```bash
+# Liệt kê các font có sẵn
+fc-list | grep -i lilex
+
+# Cấu hình terminal sử dụng Lilex
+# Với Ghostty: Sửa ~/.config/ghostty/config
+# Thêm: font-family = "LilexNerdFont"
+
+# Với Alacritty: Sửa ~/.config/alacritty/alacritty.yml
+# Thêm vào font.normal:
+#   family: "LilexNerdFont"
+```
+
+**Sử dụng Lilex với VS Code/VSCodium**:
+1. Mở Settings (Ctrl+,)
+2. Tìm kiếm "Font Family"
+3. Đặt thành: `'LilexNerdFont', monospace`
+4. Bật Font Ligatures trong settings
+
+### Sử dụng Shell hiện đại
+
+**Starship Prompt** - Hoạt động với mọi shell:
+
+```bash
+# Thêm vào file cấu hình shell:
+# Với Bash (~/.bashrc):
+eval "$(starship init bash)"
+
+# Với Zsh (~/.zshrc):
+eval "$(starship init zsh)"
+
+# Với Fish (~/.config/fish/config.fish):
+starship init fish | source
+```
+
+**Chuyển sang Zsh**:
+
+```bash
+# Đặt Zsh làm shell mặc định
+chsh -s $(which zsh)
+
+# Đăng xuất và đăng nhập lại để áp dụng thay đổi
+```
+
+**Chuyển sang Fish**:
+
+```bash
+# Đặt Fish làm shell mặc định
+chsh -s $(which fish)
+
+# Đăng xuất và đăng nhập lại để áp dụng thay đổi
+```
+
+**Cấu hình Fish Shell**:
+
+```bash
+# File cấu hình Fish
+~/.config/fish/config.fish
+
+# Fish có giao diện cấu hình web
+fish_config
+```
+
 ### Làm việc với Docker
 
 ```bash
