@@ -5,6 +5,7 @@ result-*
 
 # Setup script outputs
 configuration.nix
+hardware-configuration.nix
 *.backup.*
 
 # Terraform

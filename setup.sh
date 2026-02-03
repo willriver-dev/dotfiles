@@ -142,6 +142,10 @@ while true; do
     fi
 done
 
+# Prompt for timezone
+TIMEZONE=$(prompt_input "Enter timezone" "Asia/Ho_Chi_Minh")
+print_success "Timezone: $TIMEZONE"
+
 # Ask if user wants to set password now
 echo ""
 print_info "Do you want to set a password now?"
@@ -218,6 +222,32 @@ cat > configuration.nix << EOF
   # Networking
   networking.hostName = "$HOSTNAME";
   networking.networkmanager.enable = true;
+
+  # Timezone
+  time.timeZone = "$TIMEZONE";
+
+  # Internationalization
+  i18n.defaultLocale = "en_US.UTF-8";
+  i18n.extraLocaleSettings = {
+    LC_ADDRESS = "en_US.UTF-8";
+    LC_IDENTIFICATION = "en_US.UTF-8";
+    LC_MEASUREMENT = "en_US.UTF-8";
+    LC_MONETARY = "en_US.UTF-8";
+    LC_NAME = "en_US.UTF-8";
+    LC_NUMERIC = "en_US.UTF-8";
+    LC_PAPER = "en_US.UTF-8";
+    LC_TELEPHONE = "en_US.UTF-8";
+    LC_TIME = "en_US.UTF-8";
+  };
+
+  # Keyboard layout
+  services.xserver.xkb = {
+    layout = "us";
+    variant = "";
+  };
+
+  # Allow unfree packages
+  nixpkgs.config.allowUnfree = true;
 
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
