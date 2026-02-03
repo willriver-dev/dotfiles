@@ -14,8 +14,10 @@ A simple NixOS configuration using Flakes with the Niri Wayland compositor.
 - **Editors**: Helix, Vim, VS Code
 - **Browsers**: Firefox, Chromium
 - **API Testing**: Postman, Insomnia
-- **Utilities**: fastfetch, htop, wget, curl
+- **Utilities**: fastfetch, htop, wget, curl, Starship prompt
 - **Terminals**: Ghostty, Alacritty
+- **Shells**: Zsh, Fish
+- **Fonts**: Lilex Nerd Font
 
 ## Table of Contents
 
@@ -376,6 +378,73 @@ nix-env -q
 
 # System resources
 htop
+```
+
+### Using Lilex Nerd Font
+
+After installation, Lilex Nerd Font will be available system-wide:
+
+```bash
+# List available fonts
+fc-list | grep -i lilex
+
+# Configure your terminal to use Lilex
+# For Ghostty: Edit ~/.config/ghostty/config
+# Add: font-family = "LilexNerdFont"
+
+# For Alacritty: Edit ~/.config/alacritty/alacritty.yml
+# Add under font.normal:
+#   family: "LilexNerdFont"
+```
+
+**Using Lilex with VS Code/VSCodium**:
+1. Open Settings (Ctrl+,)
+2. Search for "Font Family"
+3. Set to: `'LilexNerdFont', monospace`
+4. Enable Font Ligatures in settings
+
+### Using Modern Shells
+
+**Starship Prompt** - Works with any shell:
+
+```bash
+# Add to your shell config:
+# For Bash (~/.bashrc):
+eval "$(starship init bash)"
+
+# For Zsh (~/.zshrc):
+eval "$(starship init zsh)"
+
+# For Fish (~/.config/fish/config.fish):
+starship init fish | source
+```
+
+**Switching to Zsh**:
+
+```bash
+# Set Zsh as default shell
+chsh -s $(which zsh)
+
+# Log out and log back in for changes to take effect
+```
+
+**Switching to Fish**:
+
+```bash
+# Set Fish as default shell
+chsh -s $(which fish)
+
+# Log out and log back in for changes to take effect
+```
+
+**Fish Shell Configuration**:
+
+```bash
+# Fish configuration file
+~/.config/fish/config.fish
+
+# Fish offers a web-based configuration interface
+fish_config
 ```
 
 ### Working with Docker

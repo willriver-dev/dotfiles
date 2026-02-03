@@ -62,6 +62,9 @@
         htop
         wget
         curl
+        starship  # Modern cross-shell prompt
+        zsh       # Z shell - popular modern shell
+        fish      # Friendly interactive shell
 
         # Terminals
         ghostty
@@ -88,6 +91,11 @@
 
             # Enable Docker
             virtualisation.docker.enable = true;
+
+            # Enable font configuration for Nerd Fonts
+            fonts.packages = with pkgs; [
+              (nerdfonts.override { fonts = [ "Lilex" ]; })
+            ];
 
             # Basic system configuration
             system.stateVersion = "25.11";
