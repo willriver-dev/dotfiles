@@ -239,12 +239,15 @@ if [ "$HAS_PASSWORD" = true ]; then
     # Generate hashed password using mkpasswd or Python
     HASHED_PASSWORD=""
     
-    # Try mkpasswd first (from whois package)
+    # Try mkpasswd first (from whois package) - use stdin for security
     if command -v mkpasswd &> /dev/null; then
-        HASHED_PASSWORD=$(mkpasswd -m sha-512 "$PASSWORD")
+        HASHED_PASSWORD=$(mkpasswd -m sha-512 -s <<< "$PASSWORD")
     # Fallback to Python's crypt module (secure: password via stdin)
     elif command -v python3 &> /dev/null; then
-        HASHED_PASSWORD=$(python3 -c 'import sys, crypt; print(crypt.crypt(sys.stdin.read().rstrip(), crypt.mksalt(crypt.METHOD_SHA512)))' <<< "$PASSWORD" 2>/dev/null)
+        HASHED_PASSWORD=$(python3 -c 'import sys, crypt; print(crypt.crypt(sys.stdin.read().rstrip(), crypt.mksalt(crypt.METHOD_SHA512)))' <<< "$PASSWORD")
+        if [ -z "$HASHED_PASSWORD" ]; then
+            print_error "Python crypt module failed - may need system dependencies"
+        fi
     # Last resort: use openssl if available
     elif command -v openssl &> /dev/null; then
         HASHED_PASSWORD=$(openssl passwd -6 "$PASSWORD")
@@ -281,13 +284,19 @@ print_success "Đã tạo configuration.nix"
 # Function to generate or copy hardware configuration
 generate_hardware_config() {
     # Try to generate hardware config
-    if sudo nixos-generate-config --show-hardware-config 2>/dev/null | sudo tee hardware-configuration.nix > /dev/null; then
+    if sudo nixos-generate-config --show-hardware-config 2>/dev/null | tee hardware-configuration.nix > /dev/null; then
         print_success "Đã tạo hardware-configuration.nix tự động / Auto-generated hardware-configuration.nix"
+        # Fix ownership if created with sudo
+        if [ -f hardware-configuration.nix ]; then
+            sudo chown "$USER:$(id -gn)" hardware-configuration.nix 2>/dev/null || true
+        fi
         return 0
     else
         print_warning "Không thể tự động tạo, sao chép từ /etc/nixos/"
         print_warning "Cannot auto-generate, copying from /etc/nixos/"
         if sudo cp /etc/nixos/hardware-configuration.nix . 2>/dev/null; then
+            # Fix ownership after copying with sudo
+            sudo chown "$USER:$(id -gn)" hardware-configuration.nix 2>/dev/null || true
             print_success "Đã sao chép hardware-configuration.nix"
             return 0
         else
