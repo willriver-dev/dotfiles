@@ -14,8 +14,10 @@ Cấu hình NixOS đơn giản sử dụng Flakes với Niri Wayland compositor.
 - **Trình soạn thảo**: Helix, Vim, VS Code
 - **Trình duyệt**: Firefox, Chromium
 - **Kiểm thử API**: Postman, Insomnia
-- **Tiện ích**: fastfetch, htop, wget, curl
+- **Tiện ích**: fastfetch, htop, wget, curl, Starship prompt
 - **Terminal**: Ghostty, Alacritty
+- **Shell**: Zsh, Fish
+- **Font**: Lilex Nerd Font
 
 ## Mục lục
 

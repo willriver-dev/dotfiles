@@ -14,8 +14,10 @@ A simple NixOS configuration using Flakes with the Niri Wayland compositor.
 - **Editors**: Helix, Vim, VS Code
 - **Browsers**: Firefox, Chromium
 - **API Testing**: Postman, Insomnia
-- **Utilities**: fastfetch, htop, wget, curl
+- **Utilities**: fastfetch, htop, wget, curl, Starship prompt
 - **Terminals**: Ghostty, Alacritty
+- **Shells**: Zsh, Fish
+- **Fonts**: Lilex Nerd Font
 
 ## Table of Contents
 
