@@ -72,6 +72,9 @@
       nixosConfigurations.default = nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
+          # Import the configuration.nix file (includes hardware-configuration.nix and boot loader setup)
+          # If this file doesn't exist, run ./setup.sh first to generate it
+          ./configuration.nix
           niri.nixosModules.niri
           ({ pkgs, ... }: {
             # Enable Niri compositor
