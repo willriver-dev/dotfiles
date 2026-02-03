@@ -3,6 +3,10 @@ result
 result-*
 .direnv
 
+# Setup script outputs
+configuration.nix
+*.backup.*
+
 # Terraform
 terraform.tfstate*
 .terraform
