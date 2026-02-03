@@ -54,18 +54,18 @@ prompt_password() {
     while true; do
         read -s -p "$(echo -e "${BLUE}?${NC} $prompt: ")" password1
         echo
-        read -s -p "$(echo -e "${BLUE}?${NC} Xác nhận mật khẩu / Confirm password: ")" password2
+        read -s -p "$(echo -e "${BLUE}?${NC} Confirm password: ")" password2
         echo
         
         if [ "$password1" = "$password2" ]; then
             if [ -z "$password1" ]; then
-                print_warning "Mật khẩu không được để trống / Password cannot be empty"
+                print_warning "Password cannot be empty"
                 continue
             fi
             echo "$password1"
             return 0
         else
-            print_warning "Mật khẩu không khớp / Passwords do not match. Vui lòng thử lại / Please try again."
+            print_warning "Passwords do not match. Please try again."
         fi
     done
 }
@@ -74,8 +74,7 @@ prompt_password() {
 validate_username() {
     local username="$1"
     if [[ ! "$username" =~ ^[a-z_][a-z0-9_-]*$ ]]; then
-        print_error "Tên người dùng không hợp lệ / Invalid username"
-        print_info "Username phải bắt đầu bằng chữ thường hoặc gạch dưới và chỉ chứa chữ thường, số, gạch dưới và gạch ngang"
+        print_error "Invalid username"
         print_info "Username must start with lowercase letter or underscore and contain only lowercase letters, numbers, underscores, and hyphens"
         return 1
     fi
@@ -87,13 +86,12 @@ validate_hostname() {
     local hostname="$1"
     # Check RFC 1123 compliance
     if [[ ! "$hostname" =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$ ]]; then
-        print_error "Hostname không hợp lệ / Invalid hostname"
-        print_info "Hostname phải tuân theo RFC 1123: chỉ chữ thường, số và dấu gạch ngang (không ở đầu/cuối)"
+        print_error "Invalid hostname"
         print_info "Hostname must follow RFC 1123: lowercase letters, numbers, and hyphens (not at start/end)"
         return 1
     fi
     if [ ${#hostname} -gt 253 ]; then
-        print_error "Hostname quá dài (tối đa 253 ký tự) / Hostname too long (max 253 characters)"
+        print_error "Hostname too long (max 253 characters)"
         return 1
     fi
     return 0
@@ -106,31 +104,29 @@ backup_file() {
         # Add nanoseconds to ensure unique backup names
         local backup_name="${file}.backup.$(date +%Y%m%d_%H%M%S_%N)"
         cp "$file" "$backup_name"
-        print_success "Đã sao lưu / Backed up: $file"
+        print_success "Backed up: $file"
     fi
 }
 
 # Main script
 clear
 echo "================================================="
-echo "  NixOS Dotfiles - Thiết lập tự động / Setup  "
+echo "      NixOS Dotfiles - Automated Setup      "
 echo "================================================="
 echo ""
 
 # Check if running in the dotfiles directory
 if [ ! -f "flake.nix" ] || [ ! -f "example-configuration.nix" ]; then
-    print_error "Lỗi: Vui lòng chạy script này trong thư mục dotfiles"
     print_error "Error: Please run this script from the dotfiles directory"
     exit 1
 fi
 
-print_info "Script này sẽ giúp bạn cấu hình username, hostname và password"
 print_info "This script will help you configure username, hostname, and password"
 echo ""
 
 # Prompt for username
 while true; do
-    USERNAME=$(prompt_input "Nhập tên người dùng / Enter username" "$USER")
+    USERNAME=$(prompt_input "Enter username" "$USER")
     if validate_username "$USERNAME"; then
         print_success "Username: $USERNAME"
         break
@@ -139,7 +135,7 @@ done
 
 # Prompt for hostname
 while true; do
-    HOSTNAME=$(prompt_input "Nhập hostname" "nixos")
+    HOSTNAME=$(prompt_input "Enter hostname" "nixos")
     if validate_hostname "$HOSTNAME"; then
         print_success "Hostname: $HOSTNAME"
         break
@@ -148,33 +144,30 @@ done
 
 # Ask if user wants to set password now
 echo ""
-print_info "Bạn có muốn đặt mật khẩu ngay bây giờ không?"
 print_info "Do you want to set a password now?"
-print_warning "Lưu ý: Mật khẩu sẽ được lưu trong /etc/nixos/configuration.nix (an toàn)"
-print_warning "Note: Password will be stored in /etc/nixos/configuration.nix (secure)"
+print_warning "Note: A simple default password 'initial' will be used if you skip this step"
+print_warning "Password will be stored as plain text in configuration.nix (for initial setup only)"
+print_warning "You MUST change it after first login using 'passwd' command"
 read -p "$(echo -e "${BLUE}?${NC} (y/n) [y]: ")" SET_PASSWORD
 SET_PASSWORD="${SET_PASSWORD:-y}"
 
 if [[ "$SET_PASSWORD" =~ ^[Yy]$ ]]; then
-    PASSWORD=$(prompt_password "Nhập mật khẩu / Enter password")
-    print_success "Mật khẩu đã được thiết lập / Password has been set"
+    PASSWORD=$(prompt_password "Enter password")
+    print_success "Password has been set"
     HAS_PASSWORD=true
     IS_DEFAULT_PASSWORD=false
 else
-    print_warning "Bỏ qua đặt mật khẩu / Skipping password setup"
-    print_info "Mật khẩu mặc định ban đầu sẽ được đặt là: 'nixos'"
-    print_info "Initial default password will be set to: 'nixos'"
-    print_warning "Nhớ thay đổi mật khẩu ngay sau khi đăng nhập đầu tiên!"
+    print_warning "Skipping password setup"
+    print_info "Initial default password will be set to: 'initial'"
     print_warning "Remember to change password immediately after first login!"
-    print_info "Dùng lệnh sau để đổi mật khẩu: passwd"
     print_info "Use this command to change password: passwd"
-    PASSWORD="nixos"
+    PASSWORD="initial"
     HAS_PASSWORD=true
     IS_DEFAULT_PASSWORD=true
 fi
 
 echo ""
-print_info "Đang cập nhật cấu hình / Updating configuration..."
+print_info "Updating configuration..."
 echo ""
 
 # Backup files
@@ -182,19 +175,19 @@ backup_file "flake.nix"
 backup_file "example-configuration.nix"
 
 # Update flake.nix - change username in homeConfigurations
-print_info "Đang cập nhật flake.nix..."
+print_info "Updating flake.nix..."
 sed -i "s/username = \".*\";/username = \"$USERNAME\";/" flake.nix
-print_success "Đã cập nhật flake.nix"
+print_success "Updated flake.nix"
 
 # Update example-configuration.nix - change hostname and username
-print_info "Đang cập nhật example-configuration.nix..."
+print_info "Updating example-configuration.nix..."
 sed -i "s/networking\.hostName = \".*\";/networking.hostName = \"$HOSTNAME\";/" example-configuration.nix
 # Use more specific pattern to match username in users.users.<username>
 sed -i "s/users\.users\.[a-z_][a-z0-9_-]* = {/users.users.$USERNAME = {/" example-configuration.nix
-print_success "Đã cập nhật example-configuration.nix"
+print_success "Updated example-configuration.nix"
 
 # Create a personalized configuration.nix
-print_info "Đang tạo configuration.nix..."
+print_info "Creating configuration.nix..."
 
 # Detect NixOS version from os-release if available
 STATE_VERSION="24.05"
@@ -203,7 +196,7 @@ if [ -f /etc/os-release ]; then
     DETECTED_VERSION=$(grep "^VERSION_ID=" /etc/os-release | cut -d'"' -f2 || echo "")
     if [ -n "$DETECTED_VERSION" ]; then
         STATE_VERSION="$DETECTED_VERSION"
-        print_info "Phát hiện NixOS phiên bản / Detected NixOS version: $STATE_VERSION"
+        print_info "Detected NixOS version: $STATE_VERSION"
     fi
 fi
 
@@ -236,34 +229,14 @@ cat > configuration.nix << EOF
 EOF
 
 if [ "$HAS_PASSWORD" = true ]; then
-    # Generate hashed password using mkpasswd or Python
-    HASHED_PASSWORD=""
-    
-    # Try mkpasswd first (from whois package)
-    if command -v mkpasswd &> /dev/null; then
-        HASHED_PASSWORD=$(mkpasswd -m sha-512 "$PASSWORD")
-    # Fallback to Python's crypt module (secure: password via stdin)
-    elif command -v python3 &> /dev/null; then
-        HASHED_PASSWORD=$(python3 -c 'import sys, crypt; print(crypt.crypt(sys.stdin.read().rstrip(), crypt.mksalt(crypt.METHOD_SHA512)))' <<< "$PASSWORD" 2>/dev/null)
-    # Last resort: use openssl if available
-    elif command -v openssl &> /dev/null; then
-        HASHED_PASSWORD=$(openssl passwd -6 "$PASSWORD")
-    fi
-    
+    # Use plain password directly - NixOS will handle it at build time
+    # This avoids dependencies on mkpasswd, python3, or openssl
+    # Note: initialPassword is stored in plain text but only used for first login
+    cat >> configuration.nix << EOF
+    initialPassword = "$PASSWORD";
+EOF
     # Clear password from memory immediately
     unset PASSWORD
-    
-    if [ -n "$HASHED_PASSWORD" ]; then
-        cat >> configuration.nix << EOF
-    hashedPassword = "$HASHED_PASSWORD";
-EOF
-        unset HASHED_PASSWORD
-    else
-        print_error "Không thể tạo mật khẩu băm / Unable to generate hashed password"
-        print_error "Vui lòng cài đặt mkpasswd, python3, hoặc openssl"
-        print_error "Please install mkpasswd, python3, or openssl"
-        exit 1
-    fi
 fi
 
 cat >> configuration.nix << EOF
@@ -276,24 +249,21 @@ cat >> configuration.nix << EOF
 }
 EOF
 
-print_success "Đã tạo configuration.nix"
+print_success "Created configuration.nix"
 
 # Function to generate or copy hardware configuration
 generate_hardware_config() {
     # Try to generate hardware config
     if sudo nixos-generate-config --show-hardware-config 2>/dev/null | sudo tee hardware-configuration.nix > /dev/null; then
-        print_success "Đã tạo hardware-configuration.nix tự động / Auto-generated hardware-configuration.nix"
+        print_success "Auto-generated hardware-configuration.nix"
         return 0
     else
-        print_warning "Không thể tự động tạo, sao chép từ /etc/nixos/"
         print_warning "Cannot auto-generate, copying from /etc/nixos/"
         if sudo cp /etc/nixos/hardware-configuration.nix . 2>/dev/null; then
-            print_success "Đã sao chép hardware-configuration.nix"
+            print_success "Copied hardware-configuration.nix"
             return 0
         else
-            print_warning "Không thể tìm thấy /etc/nixos/hardware-configuration.nix"
             print_warning "Cannot find /etc/nixos/hardware-configuration.nix"
-            print_info "Bạn sẽ cần tạo file này bằng lệnh:"
             print_info "You will need to create this file with:"
             echo "   ${GREEN}sudo nixos-generate-config --show-hardware-config > hardware-configuration.nix${NC}"
             return 1
@@ -303,16 +273,16 @@ generate_hardware_config() {
 
 # Generate hardware configuration automatically
 echo ""
-print_info "Đang tạo hardware-configuration.nix..."
+print_info "Creating hardware-configuration.nix..."
 
 # Check if hardware-configuration.nix already exists
 if [ -f "hardware-configuration.nix" ]; then
-    print_warning "hardware-configuration.nix đã tồn tại / already exists"
-    read -p "$(echo -e "${BLUE}?${NC} Ghi đè / Overwrite? (y/n) [n]: ")" OVERWRITE_HW
+    print_warning "hardware-configuration.nix already exists"
+    read -p "$(echo -e "${BLUE}?${NC} Overwrite? (y/n) [n]: ")" OVERWRITE_HW
     OVERWRITE_HW="${OVERWRITE_HW:-n}"
     
     if [[ ! "$OVERWRITE_HW" =~ ^[Yy]$ ]]; then
-        print_info "Giữ nguyên hardware-configuration.nix hiện tại / Keeping existing hardware-configuration.nix"
+        print_info "Keeping existing hardware-configuration.nix"
     else
         generate_hardware_config
     fi
@@ -322,38 +292,35 @@ fi
 
 echo ""
 echo "================================================="
-print_success "Thiết lập hoàn tất / Setup completed!"
+print_success "Setup completed!"
 echo "================================================="
 echo ""
 
-print_info "Các file đã được cập nhật / Files have been updated:"
+print_info "Files have been updated:"
 echo "  ✓ flake.nix"
 echo "  ✓ example-configuration.nix"
-echo "  ✓ configuration.nix (mới / new)"
+echo "  ✓ configuration.nix (new)"
 echo "  ✓ hardware-configuration.nix"
 echo ""
 
-print_info "Các bước tiếp theo / Next steps:"
+print_info "Next steps:"
 echo ""
-echo "1. Xem lại cấu hình / Review configuration:"
+echo "1. Review configuration:"
 echo "   ${GREEN}cat configuration.nix${NC}"
 echo ""
-echo "2. Build và apply cấu hình / Build and apply configuration:"
+echo "2. Build and apply configuration:"
 echo "   ${GREEN}sudo nixos-rebuild switch --flake .#default${NC}"
 echo ""
-echo "3. Khởi động lại / Reboot:"
+echo "3. Reboot:"
 echo "   ${GREEN}sudo reboot${NC}"
 echo ""
 
 if [ "$IS_DEFAULT_PASSWORD" = true ]; then
-    print_warning "⚠️  QUAN TRỌNG / IMPORTANT ⚠️"
-    print_warning "Mật khẩu mặc định là 'nixos'"
-    print_warning "Default password is 'nixos'"
-    print_warning "Hãy đổi mật khẩu ngay sau khi đăng nhập đầu tiên!"
+    print_warning "⚠️  IMPORTANT ⚠️"
+    print_warning "Default password is 'initial'"
     print_warning "Change password immediately after first login!"
     echo "   ${YELLOW}passwd${NC}"
     echo ""
 fi
 
-print_info "Để xem hướng dẫn chi tiết, xem README.md hoặc docs/README.vi-VN.md"
 print_info "For detailed instructions, see README.md or docs/README.vi-VN.md"
