@@ -541,7 +541,7 @@ Sửa phần cấu hình hệ thống trong `flake.nix` hoặc sử dụng `exam
 Trong `flake.nix`, thay đổi nixpkgs input (dòng 5):
 
 ```nix
-nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";  # hoặc phiên bản khác
+nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";  # hoặc phiên bản khác
 ```
 
 Sau đó update:
