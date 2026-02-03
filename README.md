@@ -33,7 +33,7 @@ A simple NixOS configuration using Flakes with the Niri Wayland compositor.
 
 Before installing, ensure you have:
 
-- A working NixOS installation (version 24.05 or later recommended)
+- A working NixOS installation (version 25.11 or later recommended)
 - Flakes enabled in your NixOS configuration
 - Internet connection for downloading packages
 - Sudo/root access for system-level installation
@@ -166,9 +166,9 @@ You can change the hostname by editing your `/etc/nixos/configuration.nix` or by
 
 ### System State Version
 
-- **State Version**: `24.05`
+- **State Version**: `25.11`
 
-This refers to NixOS version 24.05. Keep this consistent with your NixOS release.
+This refers to NixOS version 25.11. Keep this consistent with your NixOS release.
 
 ## Post-Installation
 
