@@ -69,9 +69,6 @@
         # Terminals
         ghostty
         alacritty
-
-        # Fonts
-        (nerdfonts.override { fonts = [ "Lilex" ]; })
       ];
     in
     {
