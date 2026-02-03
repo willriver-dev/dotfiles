@@ -1,46 +1,52 @@
-dotfiles
-========
+# NixOS Dotfiles with Niri
 
-My personal dotfiles. 
+A simple NixOS configuration using Flakes with the Niri Wayland compositor.
 
-Please only open pull requests that fix bugs or adds improvements without any
-breaking changes.
+## Features
 
-These dotfiles are very personal, and I know that everyone has a different
-taste; hence fork this repository or copy/paste them into your own `dotfiles`
-repo.
+- **Niri Compositor**: Modern Wayland compositor enabled
+- **Language Runtimes**: Node.js, Python3, Go, Rust
+- **Build Tools**: GCC, CMake, GNU Make
+- **Version Control**: Git, GitHub CLI
+- **Container Tools**: Docker
+- **Editors**: Helix, Vim, VS Code
+- **Browsers**: Firefox, Chromium
+- **API Testing**: Postman, Insomnia
+- **Utilities**: fastfetch, htop, wget, curl
+- **Terminals**: Ghostty, Alacritty
 
-# On a new machine
+## Usage
 
-```
-# install all brew dependencies
-brew bundle
+### NixOS System Configuration
 
-# copy dotfiles to the appropriate places
-make
+To use this configuration on NixOS:
 
-# make fish the new default
-chsh -s /usr/local/bin/fish
+```bash
+# Clone this repository
+git clone https://github.com/willriver-dev/dotfiles.git
+cd dotfiles
 
-# generate and add new SSH key
-https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
-
-# open Nvim. Lazy.nvim will automatically install all plugins
-:Nvim
-
-
-# install tmux plugins
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-
-# disable font smoothing
-defaults -currentHost write -g AppleFontSmoothing -int 0
-
-# enable dark mode notify service
-# install binary from: https://github.com/bouk/dark-mode-notify
-# install neovim-remote
-launchctl load -w ~/Library/LaunchAgents/io.arslan.dark-mode-notify.plist
+# Build the system configuration
+sudo nixos-rebuild switch --flake .#default
 ```
 
-# Configuring Kinesis Advantage2 Keyboard
+### Home Manager (User-level)
 
-See `qmk/readme.md`
+For user-level configuration without system-level changes:
+
+```bash
+# Build the home-manager configuration
+nix build .#homeConfigurations.default.activationPackage
+./result/activate
+```
+
+## Structure
+
+- `flake.nix` - Main Nix flake configuration with all packages and Niri setup
+
+## Customization
+
+Edit `flake.nix` to:
+- Add or remove packages from `environment.systemPackages`
+- Modify Niri settings
+- Change system configuration options

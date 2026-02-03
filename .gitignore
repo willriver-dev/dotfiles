@@ -1,2 +1,8 @@
+# Nix
+result
+result-*
+.direnv
+
+# Terraform
 terraform.tfstate*
 .terraform
