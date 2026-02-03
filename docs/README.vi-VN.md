@@ -71,7 +71,8 @@ cd dotfiles
 # 3. Làm theo hướng dẫn để cấu hình:
 #    - Tên người dùng (mặc định: người dùng hiện tại)
 #    - Hostname (mặc định: nixos)
-#    - Mật khẩu (tùy chỉnh hoặc dùng mặc định 'nixos')
+#    - Timezone (mặc định: Asia/Ho_Chi_Minh)
+#    - Mật khẩu (tùy chỉnh hoặc dùng mặc định 'initial')
 
 # 4. Build và chuyển sang cấu hình mới
 sudo nixos-rebuild switch --flake .#default
@@ -83,8 +84,12 @@ sudo reboot
 Script thiết lập sẽ tự động:
 - Cập nhật `flake.nix` với tên người dùng của bạn
 - Cập nhật `example-configuration.nix` với hostname và username
-- Tạo file `configuration.nix` cá nhân hóa với cài đặt của bạn
-- Đặt mật khẩu đã được mã hóa an toàn (tùy chỉnh hoặc mặc định 'nixos')
+- Tạo file `configuration.nix` cá nhân hóa với cài đặt của bạn bao gồm:
+  - Timezone (mặc định: Asia/Ho_Chi_Minh)
+  - Cài đặt ngôn ngữ (en_US.UTF-8)
+  - Bố cục bàn phím (us)
+  - Cho phép các gói không miễn phí
+- Đặt mật khẩu (tùy chỉnh hoặc mặc định 'initial')
 - Tự động tạo `hardware-configuration.nix` cho hệ thống của bạn
 
 ### Phương pháp 1: Cài đặt System-Level (Thủ công)

@@ -71,7 +71,8 @@ cd dotfiles
 # 3. Follow the prompts to configure:
 #    - Username (default: current user)
 #    - Hostname (default: nixos)
-#    - Password (set custom or use default 'nixos')
+#    - Timezone (default: Asia/Ho_Chi_Minh)
+#    - Password (set custom or use default 'initial')
 
 # 4. Build and switch to the new configuration
 sudo nixos-rebuild switch --flake .#default
@@ -83,8 +84,12 @@ sudo reboot
 The setup script will automatically:
 - Update `flake.nix` with your username
 - Update `example-configuration.nix` with your hostname and username
-- Create a personalized `configuration.nix` with your settings
-- Set a secure hashed password (custom or default 'nixos')
+- Create a personalized `configuration.nix` with your settings including:
+  - Timezone (default: Asia/Ho_Chi_Minh)
+  - Internationalization (en_US.UTF-8)
+  - Keyboard layout (us)
+  - Allow unfree packages
+- Set a password (custom or default 'initial')
 - Auto-generate `hardware-configuration.nix` for your system
 
 ### Method 1: System-Level Installation (Manual)
