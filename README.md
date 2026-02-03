@@ -502,10 +502,13 @@ If you're still having issues:
 dotfiles/
 ├── flake.nix                    # Main configuration with packages and Niri
 ├── example-configuration.nix    # Example NixOS system configuration
+├── setup.sh                     # Automated setup script (NEW!)
 ├── README.md                    # This file (English)
 └── docs/
     └── README.vi-VN.md         # Vietnamese documentation
 ```
+
+The `setup.sh` script automates the tedious manual configuration process. Instead of manually editing files to set your username, hostname, and password, just run the script and answer a few prompts!
 
 ## Customization
 

@@ -502,10 +502,13 @@ Nếu bạn vẫn gặp vấn đề:
 dotfiles/
 ├── flake.nix                    # Cấu hình chính với các gói và Niri
 ├── example-configuration.nix    # Ví dụ cấu hình hệ thống NixOS
+├── setup.sh                     # Script thiết lập tự động (MỚI!)
 ├── README.md                    # Tài liệu tiếng Anh
 └── docs/
     └── README.vi-VN.md         # Tài liệu tiếng Việt (file này)
 ```
+
+Script `setup.sh` tự động hóa quá trình cấu hình thủ công tẻ nhạt. Thay vì phải chỉnh sửa file để đặt username, hostname và password, chỉ cần chạy script và trả lời vài câu hỏi!
 
 ## Tùy chỉnh
 
