@@ -33,7 +33,7 @@ Cấu hình NixOS đơn giản sử dụng Flakes với Niri Wayland compositor.
 
 Trước khi cài đặt, đảm bảo bạn có:
 
-- Hệ điều hành NixOS đã cài đặt (khuyến nghị phiên bản 24.05 trở lên)
+- Hệ điều hành NixOS đã cài đặt (khuyến nghị phiên bản 25.11 trở lên)
 - Flakes đã được bật trong cấu hình NixOS
 - Kết nối Internet để tải các gói
 - Quyền sudo/root để cài đặt system-level
@@ -166,9 +166,9 @@ Bạn có thể thay đổi hostname bằng cách sửa `/etc/nixos/configuratio
 
 ### Phiên bản System State
 
-- **State Version**: `24.05`
+- **State Version**: `25.11`
 
-Đây là phiên bản NixOS 24.05. Giữ nguyên để khớp với phiên bản NixOS của bạn.
+Đây là phiên bản NixOS 25.11. Giữ nguyên để khớp với phiên bản NixOS của bạn.
 
 ## Sau khi cài đặt
 
